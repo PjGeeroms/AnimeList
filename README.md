@@ -1,2 +1,2 @@
-# DutchHaghen
-Website van Dutch Haghen
+# AnimeList
+
