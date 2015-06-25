@@ -1,0 +1,48 @@
+@mixin flexbox() {
+  display: -webkit-box;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: -webkit-flex;
+  display: flex;
+}
+
+@mixin flexflow($values) {
+    flex-flow: $values;
+     -webkit-flex-flow: $values;
+}
+
+@mixin flex($values) {
+  -webkit-box-flex: $values;
+  -moz-box-flex:  $values;
+  -webkit-flex:  $values;
+  -ms-flex:  $values;
+  flex:  $values;
+}
+
+@mixin order($val) {
+  -webkit-box-ordinal-group: $val;  
+  -moz-box-ordinal-group: $val;     
+  -ms-flex-order: $val;     
+  -webkit-order: $val;  
+  order: $val;
+}
+
+
+@mixin boxsizing() {
+    -webkit-box-sizing: border-box; /* Safari/Chrome, other WebKit */
+    -moz-box-sizing: border-box;    /* Firefox, other Gecko */
+    box-sizing: border-box;         /* Opera/IE 8+ */
+}
+
+@mixin justifycontent($value) {
+    -webkit-justify-content: $value;
+            justify-content: $value;
+}
+
+@mixin transform($val) {
+-webkit-transform: rotate($val);
+   -moz-transform: rotate($val);
+     -o-transform: rotate($val);
+    -ms-transform: rotate($val);
+	transform: rotate($val);
+}

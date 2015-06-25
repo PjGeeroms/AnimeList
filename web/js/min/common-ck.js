@@ -1,0 +1,1 @@
+$("#close").click(function(){$("#message").slideUp(1e3)});
