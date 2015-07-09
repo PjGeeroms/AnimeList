@@ -13,6 +13,6 @@ public class UsernameValidator implements ConstraintValidator<ValidUsername, Str
     @Override
     public boolean isValid(String username, ConstraintValidatorContext context)
     {
-        return username != null && username.matches("[a-zA-Z]{6,255}+");
+        return username != null && username.matches("[a-zA-Z0-9]{4,255}+");
     }
 }

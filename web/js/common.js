@@ -24,7 +24,7 @@ $("#search").keypress(function(event) {
 function searchAnime() {
     var search = $("#search").val();
     var request = new XMLHttpRequest();
-    request.open("GET", "http://localhost:8080/animeList/api/animes/" + search);
+    request.open("GET", "http://" + HOST +":8080/animeList/api/animes/" + search);
     request.onload = function() {
         if (request.status === 200) {
              $("#following").empty();
@@ -33,6 +33,8 @@ function searchAnime() {
             
             if (animes.length == 0) {
                 setErrorMessage("Anime was not found!");
+            } else if (request.status === 401) {
+                setErrorMessage("You need to authorize to search in your animes!");
             } else {
                 buildList(); 
             }
@@ -41,22 +43,23 @@ function searchAnime() {
     request.send(null);
 }
 
-function getAllAnime()
-{
-    var request = new XMLHttpRequest();
-    request.open("GET", "http://localhost:8080/animeList/api/animes");
-    request.onload = function() {
-        if (request.status === 200) {
-            $("#following").empty();
-            $("#error").hide();
-            animes = JSON.parse(request.responseText);
-            buildList();      
-            $('#error').css("display","hidden");
-        } else {
-            setErrorMessage("Unable to load animes!");
-        }
-    };
-    request.send(null);
+function getAllAnime() {
+        var request = new XMLHttpRequest();
+        request.open("GET", "http://" + HOST +":8080/animeList/api/animes");
+        request.onload = function() {
+            if (request.status === 200) {
+                $("#following").empty();
+                $("#error").hide();
+                animes = JSON.parse(request.responseText);
+                buildList();      
+                $('#error').css("display","hidden");
+            } else if (request.status === 401) {
+                setErrorMessage("You need to authorize to view your animes!");
+            } else {
+                setErrorMessage("Unable to load animes!");
+            }
+        };
+        request.send(null);
 }
 
 function buildList() {
@@ -144,12 +147,14 @@ function buildList() {
             
             if (confirm("Do you want to delete " + name)) {
                 var request = new XMLHttpRequest();
-                request.open("DELETE", "http://localhost:8080/animeList/api/animes/delete/"+ id);
+                request.open("DELETE", "http://" + HOST +":8080/animeList/api/animes/delete/"+ id);
             
                 request.onload = function() {
                     if (request.status === 204) {
                         getAllAnime();
                         setSuccesMessage('"' + name + '"' + " was succesful removed!");
+                    } else if (request.status === 401) {
+                        setErrorMessage("You need to authorize to delete an anime!");
                     } else {
                         setErrorMessage("Unable to delete anime!");
                     }

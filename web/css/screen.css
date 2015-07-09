@@ -325,6 +325,56 @@ body, html {
         background-image: -ms-linear-gradient(left, #ccc, #333, #ccc);
         background-image: -o-linear-gradient(left, #ccc, #333, #ccc); }
 
+  #register {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    flex-flow: row wrap;
+    -webkit-flex-flow: row wrap;
+    -webkit-justify-content: center;
+    justify-content: center;
+    width: 95%;
+    margin: 0 auto 0 auto;
+    padding-bottom: 2em;
+    padding-top: 7em; }
+    #register form {
+      background: #31333E;
+      padding: 40px 5%; }
+      #register form legend {
+        color: #FFFFFF;
+        font-family: "Open Sans", sans-serif;
+        position: relative;
+        top: -35px;
+        left: -40%;
+        font-size: 20px; }
+      #register form p {
+        margin-bottom: 20px; }
+        #register form p label {
+          font-family: "Open Sans", sans-serif;
+          font-size: 14px;
+          display: block;
+          width: 100%;
+          margin-bottom: 5px;
+          color: #FFFFFF; }
+        #register form p input[type="text"] {
+          display: block;
+          font-family: "Open Sans", sans-serif;
+          font-size: 14px;
+          width: 100%; }
+        #register form p input[type="password"] {
+          display: block;
+          font-family: "Open Sans", sans-serif;
+          font-size: 14px;
+          width: 100%; }
+      #register form button {
+        margin-top: 5px;
+        font-family: "Open Sans", sans-serif;
+        font-size: 16px;
+        width: 100%;
+        border: 1px solid #e2e7ed; }
+
   footer {
     display: block;
     width: 100%;

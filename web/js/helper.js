@@ -1,3 +1,10 @@
+/**
+ * GLOBALS
+ */
+
+var currentAnime;
+var HOST = "95.85.41.166";
+
 $('#close').on("click", function(){
    $('#error').slideUp("slow"); 
 });
@@ -10,17 +17,19 @@ $("#update span").hover(function(i) {
     $("#update").css("color","#fff");
 });
 
-$("#appSettings span").hover(function(i) {
-    $("#appSettings").css("color","#40C1C8");
+$("#authenticate span").hover(function(i) {
+    $("#authenticate").css("color","#40C1C8");
 }, function(o) {
-    $("#appSettings").css("color","#fff");
+    $("#authenticate").css("color","#fff");
 });
 
-$("#user span").hover(function(i) {
-    $("#user").css("color","#40C1C8");
+$("#registerl span").hover(function(i) {
+    $("#registerl").css("color","#40C1C8");
 }, function(o) {
-    $("#user").css("color","#fff");
+    $("#registerl").css("color","#fff");
 });
+
+
 
 
 /**

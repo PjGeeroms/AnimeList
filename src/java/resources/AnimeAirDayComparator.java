@@ -14,7 +14,7 @@ import java.util.Comparator;
  * @author PieterJan
  */
 public class AnimeAirDayComparator implements Comparator<Anime>{
-    private Calendar cal = Calendar.getInstance();
+    private final Calendar cal = Calendar.getInstance();
     
     
     @Override

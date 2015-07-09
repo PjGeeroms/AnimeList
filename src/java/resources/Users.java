@@ -31,18 +31,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 import validation.OnPasswordUpdate;
-
-
-
-
-
-
-
-
 /*
  * Deze klasse stelt de JAX-RS resource "users" voor.
  */
@@ -79,7 +73,7 @@ public class Users
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addUser(User user)
     {
-        Set<ConstraintViolation<User>> violations = 
+       Set<ConstraintViolation<User>> violations = 
                 validator.validate(user, OnPasswordUpdate.class);
         if (!violations.isEmpty()) {
             throw new BadRequestException("Ongeldige invoer");
@@ -88,6 +82,7 @@ public class Users
         if (em.find(User.class, user.getUsername()) != null) {
             throw new BadRequestException("Username al in gebruik");
         }
+        user.getRoles().add("user");
         
         em.persist(user);
         
@@ -95,72 +90,6 @@ public class Users
                 .build();
     }
     
-    @Path("{username}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public User getUser(@PathParam("username") String username)
-    {
-        User user = em.find(User.class, username);
-        
-        if (user == null) {
-            throw new NotFoundException("Gebruiker niet gevonden");
-        }
-        
-        return user;
-    }
-    
-    @Path("{username}")
-    @PUT
-    @Consumes(MediaType.APPLICATION_JSON)
-    public void updateUser(@PathParam("username") String username,
-            InputStream input)
-    {
-        if (!context.getUserPrincipal().getName().equals(username)
-                && !context.isUserInRole("admin")) {
-            throw new ForbiddenException();
-        }
-        
-        User user = em.find(User.class, username);
-        
-        if (user == null) {
-            throw new NotFoundException("Gebruiker niet gevonden");
-        }
-        
-        em.detach(user);
-        
-        boolean passwordUpdated = false;
-        
-        try (JsonReader jsonInput = Json.createReader(input)) {
-            JsonObject jsonUser = jsonInput.readObject();
-
-            // Ter illustratie ondersteunen we hier enkel het wijzigen
-            //van het paswoord en de
-            // fullName. Hoe je een volledige update kan ondersteunen,
-            //is te vinden in het grote
-            // voorbeeld 'Reminders'.
-            
-            if (jsonUser.containsKey("password")) {
-                user.setPassword(jsonUser.getString("password", null));
-                passwordUpdated = true;
-            }
-
-            if (jsonUser.containsKey("fullName")) {
-                user.setFullName(jsonUser.getString("fullName", null));
-            }
-
-        } catch (JsonException | ClassCastException ex) {
-            throw new BadRequestException("Ongeldige JSON invoer");
-        }
-        
-        Set<ConstraintViolation<User>> violations = passwordUpdated ?
-                validator.validate(user, OnPasswordUpdate.class) : 
-                validator.validate(user);
-        if (!violations.isEmpty()) {
-            throw new BadRequestException("Ongeldige invoer");
-        }
-        
-        em.merge(user);
-    }
     
     @Path("{username}")
     @DELETE

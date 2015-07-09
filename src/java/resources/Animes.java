@@ -7,6 +7,7 @@ package resources;
 
 import com.sun.tools.ws.wsdl.framework.DuplicateEntityException;
 import entity.Anime;
+import entity.User;
 import exceptions.AlreadyFoundException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,6 +25,7 @@ import javax.enterprise.context.RequestScoped;
 import javax.persistence.EntityManager;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
@@ -56,17 +58,24 @@ public class Animes {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Anime> getAllAnime(
-            @QueryParam("first") @DefaultValue("0") int first,
-            @QueryParam("results") @DefaultValue("10") int results)
-    {
-        TypedQuery<Anime> queryFindAll = 
-                em.createNamedQuery("Anime.findAll", Anime.class);
+    public List<Anime> getAllAnime(){   
+        System.out.println("Authorized: " + context.getUserPrincipal().getName());
+        if (context.getUserPrincipal() != null) {
+            String username = context.getUserPrincipal().getName();
+            TypedQuery<User> query = em.createNamedQuery("User.findById", User.class).setParameter("username", username);
+            User u = query.getSingleResult();
+            System.out.println("Username: " + u.getUsername());
+            List<Anime> animes = u.getAnimes();
+            Collections.sort(animes, new AnimeAirDayComparator());
+            System.out.println("Animes: ");
+            animes.stream().forEach((anime) -> {
+                System.out.println(anime.getTitle());
+            });
+            return animes;
+        } else {
+            throw new ForbiddenException("You have not been Authorized!");
+        }
         
-        queryFindAll.setFirstResult(first);
-        List <Anime> animes = queryFindAll.getResultList();
-        Collections.sort(animes, new AnimeAirDayComparator());
-        return animes;
     }
     
     @Path("{search}")
@@ -74,11 +83,22 @@ public class Animes {
     @Produces(MediaType.APPLICATION_JSON)
     public List<Anime> getAnime(@PathParam("search") String search)
     {
-        List<Anime> animes;
-        TypedQuery query = em.createNamedQuery("Anime.findByName", Anime.class).setParameter("title", "%"+search+"%");
-        animes = query.getResultList();
-        Collections.sort(animes, new AnimeAirDayComparator());
-        return animes;
+        if(context.getUserPrincipal() != null) {
+            String username = context.getUserPrincipal().getName();
+            TypedQuery<User> query = em.createNamedQuery("User.findById", User.class).setParameter("username", username);
+            User u = query.getSingleResult();
+            List<Anime> animes = u.getAnimes();
+            List<Anime> filtered = new ArrayList<>();
+            animes.stream().filter((a) -> (a.getTitle().toLowerCase().contains(search.toLowerCase()))).forEach((a) -> {
+                filtered.add(a);
+            });
+
+            Collections.sort(filtered, new AnimeAirDayComparator());
+            return filtered;
+        } else {
+            throw new ForbiddenException("You have not been Authorized!");
+        }
+        
     }
     
     @Path("add/{search}")
@@ -90,96 +110,114 @@ public class Animes {
         XmlToAnime.setUrl("http://myanimelist.net/api/anime/search.xml?q=" + Replacer.encodeUrl(search));
         XmlToAnime.ReadXml();
         animes = XmlToAnime.getAnimes();
-        
+
         return animes;
     }
     
-    //Overbodig
-    @Path("add/{search}/{id}")
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public Anime searchAnime(@PathParam("search") String search, @PathParam("id") int id)
-    {
-        List<Anime> animes;
-        XmlToAnime.setUrl("http://myanimelist.net/api/anime/search.xml?q=" + Replacer.encodeUrl(search));
-        XmlToAnime.ReadXml();
-        animes = XmlToAnime.getAnimes();
-        if (!animes.isEmpty() && animes.size() >= id) {
-            return animes.get(id);
-        }
-        
-        
-        return null;
-    }
     
     @Path("add/{search}/{id}")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     public Response addAnime(@PathParam("search") String search, @PathParam("id") int id) throws URISyntaxException, AlreadyFoundException
     {
-        if (!context.isUserInRole("admin")) {
-            throw new ForbiddenException();
+        if (context.getUserPrincipal() != null) {
+            String username = context.getUserPrincipal().getName();
+            Anime myAnime = em.find(Anime.class, id);
+            List <Anime> animes;
+
+
+            TypedQuery<User> findUser = em.createNamedQuery("User.findById", User.class).setParameter("username", username);
+            User u = findUser.getSingleResult();
+
+            if (myAnime != null) {
+                if (u.getAnimes().contains(myAnime)) {
+                    // Kijken of anime al in de lijst zit.
+                    throw new AlreadyFoundException(myAnime);
+                } else {
+                    // Anime toevoegen aan gebruiker
+                    u.addAnime(myAnime);
+                    em.persist(u);
+                }
+            } else {
+                // Anime opzoeken en toevoegen aan gebruiker
+                XmlToAnime.setUrl("http://myanimelist.net/api/anime/search.xml?q=" + Replacer.encodeUrl(search));
+                XmlToAnime.ReadXml();
+                animes = XmlToAnime.getAnimes();
+
+                // Kijken of de lijst niet leeg is
+                if (!animes.isEmpty()) {   
+                    for (Anime a : animes) {
+                        if(a.getId() == id) {
+                            myAnime = a;
+                            break;
+                        }
+                    }
+
+
+
+                    myAnime.setDescription(Replacer.replaceIllegalCharacters(myAnime.getDescription()));
+                    em.persist(myAnime);
+                    u.addAnime(myAnime);
+                    em.persist(u);
+                }
+
+            }
+
+            return Response.status(201).build();
+        } else {
+            throw new ForbiddenException("You have not been authorized!");
         }
         
-        List<Anime> animes;
-        XmlToAnime.setUrl("http://myanimelist.net/api/anime/search.xml?q=" + Replacer.encodeUrl(search));
-        XmlToAnime.ReadXml();
-        animes = XmlToAnime.getAnimes();
-        if (!animes.isEmpty() && animes.size() >= id) {
-            //return animes.get(id);
-            animes.get(id).setDescription(Replacer.replaceIllegalCharacters(animes.get(id).getDescription()));
-            TypedQuery query = em.createNamedQuery("Anime.findByName", Anime.class).setParameter("title", animes.get(id).getTitle());
-            List<Anime> results = query.getResultList();
-            
-            if (results.isEmpty()) {
-                em.persist(animes.get(id));
-            } else {
-                throw new AlreadyFoundException(animes.get(id));
-            }
-            
-        }
-        return Response.status(201).build();
     }
     
-    @Path("update/{id}")
-    @GET
-    public void updateAnimes(@PathParam("id") int id){
-        List <Anime> animes;
-        
-        Anime anime = em.find(Anime.class, id);
-        em.detach(anime);
-        
-        XmlToAnime.setUrl("http://myanimelist.net/api/anime/search.xml?q=" + Replacer.encodeUrl(anime.getTitle()));
-        XmlToAnime.ReadXml();
-        animes = XmlToAnime.getAnimes();
-        Anime updated = animes.get(0);
-        
-        anime.setTitle(updated.getTitle());
-        anime.setDescription(updated.getDescription());
-        anime.setEpisodes(updated.getEpisodes());
-        anime.setImageUrl(updated.getImageUrl());
-        anime.setStatus(updated.getStatus());
-        anime.setType(updated.getType());
-        anime.setStartDate(updated.getStartDate());
-        anime.setEndDate(updated.getEndDate());
-        anime.setAirDay(updated.getAirDay());
-        anime.setWatchedEpisodes(updated.getWatchedEpisodes());
-        
-        em.merge(anime);
-    }
+//    @Path("update/{id}")
+//    @GET
+//    public void updateAnimes(@PathParam("id") int id){
+//        List <Anime> animes;
+//        
+//        Anime anime = em.find(Anime.class, id);
+//        em.detach(anime);
+//        
+//        XmlToAnime.setUrl("http://myanimelist.net/api/anime/search.xml?q=" + Replacer.encodeUrl(anime.getTitle()));
+//        XmlToAnime.ReadXml();
+//        animes = XmlToAnime.getAnimes();
+//        Anime updated = animes.get(0);
+//        
+//        anime.setId(updated.getId());
+//        anime.setTitle(updated.getTitle());
+//        anime.setDescription(updated.getDescription());
+//        anime.setEpisodes(updated.getEpisodes());
+//        anime.setImageUrl(updated.getImageUrl());
+//        anime.setStatus(updated.getStatus());
+//        anime.setType(updated.getType());
+//        anime.setStartDate(updated.getStartDate());
+//        anime.setEndDate(updated.getEndDate());
+//        anime.setAirDay(updated.getAirDay());
+//        anime.setWatchedEpisodes(updated.getWatchedEpisodes());
+//        
+//        em.merge(anime);
+//    }
     
     @Path("delete/{id}")
     @DELETE
     public void deleteAnime(@PathParam("id") int id) {
-        if (!context.isUserInRole("admin")) {
-            throw new ForbiddenException();
-        }
-        
-        Anime anime = em.find(Anime.class, id);
-        if (anime != null) {
-            em.remove(anime);
+        if (context.getUserPrincipal() != null) {
+            String username = context.getUserPrincipal().getName();
+            User u = em.find(User.class, username);
+            Anime anime = em.find(Anime.class, id);
+            List<Anime> animes = u.getAnimes();
+            if (anime != null) {
+                if (animes.contains(anime)) {
+                    u.RemoveAnime(anime);
+                    em.persist(u);
+                } else {
+                    throw new NotFoundException("Anime is not in your list!");
+                }
+            } else {
+                throw new NotFoundException("Anime not found!");
+            }
         } else {
-            throw new NotFoundException("Anime not found!");
+            throw new ForbiddenException("You are not authorized!");
         }
     }
     

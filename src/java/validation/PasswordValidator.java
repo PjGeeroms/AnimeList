@@ -15,7 +15,7 @@ public class PasswordValidator implements
     public boolean isValid(String password,
             ConstraintValidatorContext context)
     {
-        return password != null && password.length() >= 8
+        return password != null && password.length() >= 6
                 && password.length() <= 255;
     }
 }

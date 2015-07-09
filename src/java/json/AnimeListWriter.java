@@ -68,13 +68,7 @@ public class AnimeListWriter implements MessageBodyWriter<List<Anime>>
         for (Anime anime : animes) {
             JsonObjectBuilder jsonAnime = Json.createObjectBuilder();
             
-            if (anime.getId() != null){
-                jsonAnime.add("id", anime.getId());
-            } else {
-                jsonAnime.add("id", i);
-                i++;
-            }
-            
+            jsonAnime.add("id", anime.getId());
             jsonAnime.add("title", anime.getTitle());
             jsonAnime.add("description", Replacer.replaceIllegalCharacters(anime.getDescription()));
             jsonAnime.add("episodes", anime.getEpisodes());

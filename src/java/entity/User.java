@@ -14,6 +14,7 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
@@ -35,13 +36,13 @@ import validation.ValidUsername;
 //dit is een goede gewoonte.
 @SecondaryTable(name = "USER_PASSWORD") 
 @NamedQueries({
-    @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u")
+    @NamedQuery(name = "User.findAll", query = "SELECT u FROM User u"),
+    @NamedQuery(name = "User.findById", query = "SELECT u FROM User u WHERE UPPER(u.username) LIKE UPPER(:username)"),
 })
 public class User implements Serializable
 {
     @Id
     @ValidUsername
-    @Column(name = "user_username")
     private String username;
     
     public String getUsername()
@@ -123,11 +124,20 @@ public class User implements Serializable
     }
 
     
-    @ManyToMany()
-    @JoinTable(name = "users_animes",
-            joinColumns = @JoinColumn(name = "anime_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_username"))
+    @ManyToMany(fetch = FetchType.EAGER)
     private final List<Anime> animes = new ArrayList<>();
+    
+    public List<Anime> getAnimes() {
+        return animes;
+    }
+    
+    public void addAnime(Anime a) {
+        animes.add(a);
+    }
+    
+    public void RemoveAnime(Anime a) {
+        animes.remove(a);
+    }
     
     @Override
     public int hashCode()

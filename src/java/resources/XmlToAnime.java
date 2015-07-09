@@ -118,6 +118,7 @@ public class XmlToAnime {
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                     Anime anime = new Anime();
                     Element eElement = (Element) nNode;
+                    anime.setId(Integer.parseInt(eElement.getElementsByTagName("id").item(0).getTextContent()));
                     anime.setTitle(eElement.getElementsByTagName("title").item(0).getTextContent());
                     anime.setDescription(eElement.getElementsByTagName("synopsis").item(0).getTextContent());
                     anime.setEpisodes(Integer.parseInt(eElement.getElementsByTagName("episodes").item(0).getTextContent()));

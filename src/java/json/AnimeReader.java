@@ -1,6 +1,7 @@
 package json;
 
 import entity.Anime;
+import entity.Episode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -47,6 +48,7 @@ public class AnimeReader implements MessageBodyReader<Anime>
             JsonObject jsonAnime = in.readObject();
             Anime anime = new Anime();
             
+            anime.setId(jsonAnime.getInt("id", 0));
             anime.setTitle(jsonAnime.getString("title",null));
             anime.setDescription(jsonAnime.getString("description", null));
             anime.setEpisodes(jsonAnime.getInt("episodes", 0));
@@ -56,6 +58,13 @@ public class AnimeReader implements MessageBodyReader<Anime>
             anime.setImageUrl(jsonAnime.getString("img", null));
             anime.setStartDate(jsonAnime.getString("startDate", null));
             anime.setEndDate(jsonAnime.getString("endDate",null));
+            
+            JsonArray episodeList =  jsonAnime.getJsonArray("episodeList");
+            JsonObject episode;
+            for (int i = 0; i < episodeList.size(); i++) {
+                episode = episodeList.getJsonObject(i);
+                anime.addEpisodeToList(new Episode(episode.getInt("episode", i), episode.getString("title", "")));
+            }
             return anime;
             
         } catch (JsonException | ClassCastException ex) {

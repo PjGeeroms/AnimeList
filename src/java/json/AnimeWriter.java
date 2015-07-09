@@ -50,11 +50,7 @@ public class AnimeWriter implements MessageBodyWriter<Anime>
         
        
         JsonObjectBuilder jsonAnime = Json.createObjectBuilder();
-        if(anime.getId() != null) {
-            jsonAnime.add("id", anime.getId());
-        } else {
-            jsonAnime.add("id", 0);
-        }
+        jsonAnime.add("id", anime.getId());
         jsonAnime.add("title", anime.getTitle());
         jsonAnime.add("description", Replacer.replaceIllegalCharacters(anime.getDescription()));
         jsonAnime.add("episodes", anime.getEpisodes());
@@ -70,7 +66,16 @@ public class AnimeWriter implements MessageBodyWriter<Anime>
             genres.add(genre);
         });
         jsonAnime.add("genres", genres);
+        
+        JsonArrayBuilder episodeList = Json.createArrayBuilder();
+        JsonObjectBuilder episode = Json.createObjectBuilder();
+        anime.getEpisodeList().forEach((e) -> {
+            episode.add("episode", e.getEpisode());
+            episode.add("title", e.getTitle());
+            episodeList.add(episode);
+        });
 
+        jsonAnime.add("episodeList", episodeList);
         
         try (JsonWriter out = Json.createWriter(entityStream)) {
             out.writeObject(jsonAnime.build());

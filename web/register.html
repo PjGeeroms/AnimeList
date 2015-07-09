@@ -5,8 +5,10 @@
             <meta charset="UTF-8" />
             <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
             <meta name="viewport" content="width=device-width">
-            <link rel="stylesheet" media="screen" href="css/screen.css" />
+            <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
             <link rel="stylesheet" media="screen" href="css/font-awesome.css" />
+            <link rel="stylesheet" media="screen" href="css/screen.css" />
+            
     </head>
     <body>
         <header>
@@ -15,28 +17,30 @@
                 <ul id="nav">
                     <li><a href="index.html">Home</a></li>
                     <li><a>|</a></li>
-                    <li><a href="add.html">Add</a></li>
-                </ul>
-                
-                <form action="localhost:8080/animeList/api/animes" method="GET">
-                    <input type="text" id="search" placeholder="Search anime" />
-                </form>
-                
-                <ul id="settings">
-                    <li><a href="#" id="update" class="fa fa-refresh"><span>Update all</span></a></li>
+                    <li><a href="anime.html">Add</a></li>
                 </ul>
             </div>
         </header>
+        
         <div id="message">
             <p>Error message goes here. <span id="close" class="fa fa-times-circle"></span></p>
-        </div>    
-        
-        <div id="added">
-            <p>Anime added to library!</p>
         </div>
         
-        
-        <section id="following">
+        <section id="register">
+            <form method="POST">
+                <fieldset>
+                    <p>
+                        <label for="username">Username</label>
+                        <input type="text" name="username" id="username" />
+                    </p>
+                
+                    <p>
+                        <label for="password">Password</label>
+                        <input type="password" name="password" id="password" />
+                    </p>
+                    <button type="submit" id="submit">Register</button>
+                </fieldset>
+            </form>
         </section>
         
         <footer>
@@ -47,6 +51,7 @@
        
         <script src="js/jquery-2.1.0.js"></script>
         <script src="js/helper.js"></script>
-        <script src="js/addAnime.js"></script>
+        <script src="js/register.js"></script>
+        <script src="js/jquery.countdown.js"></script>
     </body>
 </html>

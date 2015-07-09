@@ -337,6 +337,64 @@ body, html {
       
     }
     
+    #register {
+        @include flexbox;
+        @include flexflow(row wrap);
+        @include justifycontent(center);
+        width: 95%;
+        margin: 0 auto 0 auto;
+        padding-bottom: 2em;
+        padding-top: 7em;
+        
+        form {
+            background: $color-darkGray;
+            padding: 40px 5%;
+            legend {
+                color: $color-white;
+                font-family: "Open Sans", sans-serif;
+                position: relative;
+                top: -35px;
+                left: -40%;
+                font-size: 20px;
+            }
+            
+            p {
+                margin-bottom: 20px;
+                label {
+                    font-family: "Open Sans", sans-serif;
+                    font-size: 14px;
+                    display: block;
+                    width: 100%;
+                    margin-bottom: 5px;
+                    color: $color-white;
+                }
+                
+                input[type="text"] {
+                    display: block;
+                    font-family: "Open Sans", sans-serif;
+                    font-size: 14px;
+                    width: 100%;
+                }
+                
+                input[type="password"] {
+                    display: block;
+                    font-family: "Open Sans", sans-serif;
+                    font-size: 14px;
+                    width: 100%;
+                }
+            }
+            
+            button {
+                margin-top: 5px;
+                font-family: "Open Sans", sans-serif;
+                font-size: 16px;
+                width: 100%;
+                border: 1px solid $color-headtitle;
+            }
+            
+        }
+    }
+    
     footer {
         display: block;
         width: 100%;

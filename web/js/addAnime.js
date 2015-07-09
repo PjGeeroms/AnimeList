@@ -10,8 +10,6 @@ onload = function()
     //updateList();
     $("#added").hide();
     $("#search").focus();
-    $("#search").val("naruto");
-    searchAnime();
 };
 
 $("#search").keypress(function(event) {
@@ -32,7 +30,7 @@ function searchAnime() {
     var request = new XMLHttpRequest();
     search = encodeURIComponent(search);
     
-    request.open("GET", "http://localhost:8080/animeList/api/animes/add/" + search);
+    request.open("GET", "http://" + HOST +":8080/animeList/api/animes/add/" + search);
     request.onload = function() {
         if (request.status === 200) {
              $("#following").empty();
@@ -43,30 +41,14 @@ function searchAnime() {
             } else {
                 buildList();
             }
+        } else if (request.status === 401) {
+            setErrorMessage("You need to authorize to search for animes!");
         } else {
             $("#following").empty();
             setErrorMessage("No animes where found!");
         }
     };
     request.send(null);
-}
-
-function addAnime() {
-    var search = $("#search").val();
-    
-    var request = new XMLHttpRequest();
-    request.open("POST", "http://localhost:8080/animeList/api/animes/add/"+ search + "/" + anime.id);
-    anime.id = null;
-    request.onload = function() {
-        if (request.status === 201) {
-            $("#error").empty();
-            //updateList();
-        } else {
-            $("#error").text("Unable to add user");
-        }
-    };
-    request.setRequestHeader("Content-Type", "application/json");
-    request.send(JSON.stringify(anime));
 }
 
 function buildList() {
@@ -110,28 +92,36 @@ function buildList() {
                         'href' : '#',
                         'class':'btn add fa fa-plus-square',
                         'data-id': animes[i].id,
+                        'data-name': animes[i].title
                     }).append($('<span>', {
                         'text':'Add'
                     })).on("click", function(event){
                         event.preventDefault();
                         var id = $(this).data('id');
+                        var name = $(this).data('name');
                         var search = $("#search").val();
 
                         var request = new XMLHttpRequest();
                         search = encodeURIComponent(search);
-                        request.open("POST", "http://localhost:8080/animeList/api/animes/add/"+ search + "/" + id);
-                        anime.id = null;
+                        request.open("POST", "http://" + HOST +":8080/animeList/api/animes/add/"+ search + "/" + id);
+                        
+                        request.setRequestHeader("Content-Type", "application/json");
+                        request.send(JSON.stringify(animes[id]));
+                        
                         request.onload = function() {
                             if (request.status === 201) {
                                 $("#error").empty();
-                                setSuccesMessage('"' + animes[id].title + '"' + " has been added to your library!");
+                                setSuccesMessage('"' + name + '"' + " has been added to your library!");
                                 //window.location.replace("http://localhost:8080/animeList/index.html");
                             } else if (request.status == 400) {
                                 setErrorMessage("Anime is already in your library!");
+                            } else if(request.status == 403) {
+                                setErrorMessage("You are unauthorized!");
+                            } else if(request.status === 401) {
+                                setErrorMessage("You need to authorize to add an anime to your library!");
                             }
                         };
-                    request.setRequestHeader("Content-Type", "application/json");
-                    request.send(JSON.stringify(animes[id]));
+                    
                 }));
                 
                 anime.append(image).append(title).append(description).append(add).append(detailIcon);

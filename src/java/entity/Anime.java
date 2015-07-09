@@ -8,16 +8,21 @@ package entity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
@@ -35,14 +40,14 @@ import resources.AnimeStatus;
 })
 public class Anime implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "anime_id")
-    private Integer Id;
+    //@GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private Integer id;
     
-    @Column(name = "anime_title")
+    @Column(name = "title")
     private String title;
     
-    @Column(name = "anime_description", length = 5000)
+    @Column(name = "description", length = 5000)
     private String description;
     
     public Anime() {
@@ -63,14 +68,14 @@ public class Anime implements Serializable {
         this.description = description;
     }
     
-    @Column(name = "anime_image")
+    @Column(name = "image")
     private String imageUrl;
     
     public enum TYPE {
         TV, Movie, OVA, ONA, Special, Music
     };
     
-    @Column(name = "anime_type")
+    @Column(name = "type")
     private TYPE type;
 
     public TYPE getType() {
@@ -81,13 +86,13 @@ public class Anime implements Serializable {
         this.type = type;
     }
     
-    @Column(name = "anime_episodes")
+    @Column(name = "episodes")
     private Integer episodes;
     
-    @Column(name = "anime_watchedEpisodes")
+    @Column(name = "watchedEpisodes")
     private Integer watchedEpisodes;
     
-    @Column(name = "anime_status")
+    @Column(name = "status")
     private AnimeStatus status;
 
     public AnimeStatus getStatus() {
@@ -100,13 +105,13 @@ public class Anime implements Serializable {
   
     @ElementCollection
     private List<String> genres = new ArrayList<>();
-
+    
     public Integer getId() {
-        return Id;
+        return id;
     }
     
     public void setId(Integer id) {
-        this.Id = id;
+        this.id = id;
     }
 
     public String getTitle() {
@@ -129,8 +134,13 @@ public class Anime implements Serializable {
         return episodes;
     }
 
+    /**
+     * Will set the episodes and generate the episodeList
+     * @param episodes The amount of episodes in the anime.
+     */
     public void setEpisodes(Integer episodes) {
         this.episodes = episodes;
+        createListFromEpisodes();
     }
 
     public Integer getWatchedEpisodes() {
@@ -179,7 +189,43 @@ public class Anime implements Serializable {
     public void setAirDay(int airDay) {
         this.airDay = airDay;
     }
+
+    @OneToMany
+    private final List<Episode> episodeList = new ArrayList<>();
     
+    public void addEpisodeToList(Episode e) {
+        episodeList.add(e);
+    }
     
+    public void removeEpisodeFromList(Episode e) {
+        episodeList.remove(e);
+    }
+    
+    public List<Episode> getEpisodeList() {
+        return episodeList;
+    }
+    
+    /**
+     * Creates the list with empty titles using the episodes in the anime object.
+     */
+    public void createListFromEpisodes() {
+        for(int i = 0; i< episodes; i++) {
+            episodeList.add(new Episode(i, ""));
+        }
+    }
+    
+    public void setEpisodeAsWatched(int i) {
+        if (episodeList.size() >= i) {
+            episodeList.get(i).setWatched(true);
+        }
+    }
+    
+    public void setAllEpisodesWatched() {
+        if (episodeList != null) {
+            episodeList.forEach(e -> {
+                e.setWatched(true);
+            });
+        }
+    }
 }
 
